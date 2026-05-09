@@ -1,0 +1,42 @@
+"""Constants for the Zyxel NWA Access Point integration."""
+
+DOMAIN = "zyxel_nwa"
+DEFAULT_NAME = "Zyxel NWA"
+DEFAULT_HOST = "https://192.168.1.2"
+DEFAULT_USERNAME = "admin"
+DEFAULT_SCAN_INTERVAL = 30
+
+CONF_HOST = "host"
+CONF_USERNAME = "username"
+CONF_PASSWORD = "password"
+
+# API endpoints (CGI-based, same pattern across NWA series)
+API_LOGIN = "/cgi-bin/DAL?oid=login"
+API_LOGOUT = "/cgi-bin/DAL?oid=logout"
+API_DASHBOARD = "/cgi-bin/DAL?oid=dashboard"
+API_WLAN_STATUS = "/cgi-bin/DAL?oid=wlan_bss"
+API_STATION_LIST = "/cgi-bin/DAL?oid=stalist"
+API_SYSTEM_INFO = "/cgi-bin/DAL?oid=fw_version"
+API_REBOOT = "/cgi-bin/DAL?oid=reboot"
+API_CHANNEL_STATUS = "/cgi-bin/DAL?oid=channel_status"
+
+# Supported models
+SUPPORTED_MODELS = [
+    "NWA50AX",
+    "NWA50AX PRO",
+    "NWA50BE",
+    "NWA50BE PRO",
+    "NWA90AX",
+    "NWA90AX PRO",
+    "NWA90BE",
+    "NWA90BE PRO",
+    "NWA55AXE",
+    "NWA55BE",
+    "NWA110AX",
+    "NWA210AX",
+    "WAX510D",
+    "WAX610D",
+    "WAX630S",
+    "WAC500",
+    "WAC500H",
+]

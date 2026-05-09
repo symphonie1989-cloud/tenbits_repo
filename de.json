@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Zyxel NWA Access Point",
+        "description": "Connect to your Zyxel NWA access point in standalone mode. Make sure it is NOT managed via Nebula cloud.",
+        "data": {
+          "host": "Host / IP Address (e.g. 192.168.1.2)",
+          "username": "Username (usually 'admin')",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the access point. Check the IP address and make sure the AP is in standalone mode (not Nebula managed).",
+      "invalid_auth": "Invalid username or password.",
+      "unknown": "Unexpected error. Check the logs for details."
+    },
+    "abort": {
+      "already_configured": "This access point is already configured."
+    }
+  }
+}
