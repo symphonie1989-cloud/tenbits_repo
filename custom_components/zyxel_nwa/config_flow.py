@@ -1,50 +1,39 @@
-"""Button entities for Zyxel NWA Access Points."""
+"""Config flow for Zyxel NWA."""
 from __future__ import annotations
-
 import logging
-
-from homeassistant.components.button import ButtonEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
-from .const import DOMAIN
+import voluptuous as vol
+from homeassistant import config_entries
+from .const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, DEFAULT_HOST, DEFAULT_USERNAME, DOMAIN
+from .nwa_api import ZyxelNWAAuthError, ZyxelNWAClient, ZyxelNWAConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
-
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
-) -> None:
-    """Set up Zyxel NWA buttons."""
-    client = hass.data[DOMAIN][entry.entry_id]["client"]
-    async_add_entities([NWARebootButton(entry, client)])
+DATA_SCHEMA = vol.Schema({
+        vol.Required(CONF_HOST, default=DEFAULT_HOST): str,
+        vol.Required(CONF_USERNAME, default=DEFAULT_USERNAME): str,
+        vol.Required(CONF_PASSWORD): str,
+})
 
 
-class NWARebootButton(ButtonEntity):
-    """Button to reboot the access point."""
+class ZyxelNWAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+        VERSION = 1
 
-    _attr_icon = "mdi:restart"
-
-    def __init__(self, entry: ConfigEntry, client) -> None:
-        self._client = client
-        self._attr_unique_id = f"{entry.entry_id}_reboot"
-        self._attr_name = f"Zyxel NWA Reboot ({entry.data['host']})"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=f"Zyxel {client.model or 'NWA'} ({entry.data['host']})",
-            manufacturer="Zyxel",
-            model=client.model or "NWA Series",
-            sw_version=client.firmware,
-            configuration_url=entry.data["host"],
-        )
-
-    async def async_press(self) -> None:
-        """Send reboot command to the AP."""
-        _LOGGER.info("Rebooting Zyxel NWA at %s", self._client._host)
-        success = await self.hass.async_add_executor_job(self._client.reboot)
-        if success:
-            _LOGGER.info("Reboot command accepted")
-        else:
-            _LOGGER.error("Reboot command was not accepted by the device")
+    async def async_step_user(self, user_input=None):
+                errors = {}
+                if user_input is not None:
+                                host = user_input[CONF_HOST].strip()
+                                if not host.startswith("http"):
+                                                    host = f"https://{host}"
+                                                user_input[CONF_HOST] = host.rstrip("/")
+                                try:
+                                                    client = ZyxelNWAClient(user_input[CONF_HOST], user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
+                                                    await self.hass.async_add_executor_job(client.login)
+                                                    await self.hass.async_add_executor_job(client.logout)
+                                                    return self.async_create_entry(title=f"Zyxel NWA ({user_input[CONF_HOST]})", data=user_input)
+except ZyxelNWAAuthError:
+                errors["base"] = "invalid_auth"
+except ZyxelNWAConnectionError:
+                errors["base"] = "cannot_connect"
+except Exception:
+                errors["base"] = "unknown"
+        return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
